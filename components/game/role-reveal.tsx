@@ -32,15 +32,22 @@ export function RoleReveal({
 }: RoleRevealProps) {
   const [revealed, setRevealed] = useState(false);
   const [swipeProgress, setSwipeProgress] = useState(0);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const [isRevealing, setIsRevealing] = useState(false);
   const touchStartY = useRef<number | null>(null);
+  const hasTriggeredHaptic = useRef(false);
 
-  const SWIPE_THRESHOLD = 100; // pixels para activar el reveal
+  const SWIPE_THRESHOLD = 120;
 
   const handleReveal = () => {
+    setIsRevealing(true);
     haptic.reveal();
-    setRevealed(true);
-    setSwipeProgress(0);
+
+    // Transición suave antes de mostrar contenido
+    setTimeout(() => {
+      setRevealed(true);
+      setSwipeProgress(0);
+      setIsRevealing(false);
+    }, 300);
   };
 
   const handleHide = () => {
@@ -48,26 +55,26 @@ export function RoleReveal({
     onNext();
   };
 
-  // Touch handlers para el swipe up en la tarjeta
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (revealed) return;
+    if (revealed || isRevealing) return;
     touchStartY.current = e.touches[0].clientY;
+    hasTriggeredHaptic.current = false;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (revealed || touchStartY.current === null) return;
+    if (revealed || isRevealing || touchStartY.current === null) return;
 
     const currentY = e.touches[0].clientY;
-    const deltaY = touchStartY.current - currentY; // positivo = hacia arriba
+    const deltaY = touchStartY.current - currentY;
 
     if (deltaY > 0) {
-      // Solo mostramos progreso si desliza hacia arriba
       const progress = Math.min(deltaY / SWIPE_THRESHOLD, 1);
       setSwipeProgress(progress);
 
-      // Haptic feedback cuando alcanza el umbral
-      if (progress >= 1 && swipeProgress < 1) {
+      // Haptic feedback al 75% y 100%
+      if (progress >= 0.75 && !hasTriggeredHaptic.current) {
         haptic.light();
+        hasTriggeredHaptic.current = true;
       }
     } else {
       setSwipeProgress(0);
@@ -75,17 +82,19 @@ export function RoleReveal({
   };
 
   const handleTouchEnd = () => {
-    if (revealed) return;
+    if (revealed || isRevealing) return;
 
     if (swipeProgress >= 1) {
       handleReveal();
     } else {
+      // Animate back with spring effect
       setSwipeProgress(0);
     }
     touchStartY.current = null;
+    hasTriggeredHaptic.current = false;
   };
 
-  // Swipe left para pasar al siguiente (cuando ya está revelado)
+  // Swipe left para pasar al siguiente
   const swipeHandlers = useSwipe({
     onSwipeLeft: () => {
       if (revealed) {
@@ -96,13 +105,26 @@ export function RoleReveal({
     threshold: 75,
   });
 
+  // Calcular estilos dinámicos basados en el progreso
+  const cardScale = 1 + swipeProgress * 0.02;
+  const cardY = -swipeProgress * 15;
+  const blurAmount = (1 - swipeProgress) * 8;
+  const contentOpacity = swipeProgress;
+  const overlayOpacity = 1 - swipeProgress * 0.7;
+
   return (
     <div
-      className="min-h-screen bg-background p-4 flex flex-col items-center justify-center safe-x animate-fade-in"
+      className="min-h-screen bg-background p-4 flex flex-col items-center justify-center safe-x"
       {...(revealed ? swipeHandlers : {})}
     >
       {/* Player Turn Indicator */}
-      <div className="text-center mb-8">
+      <div
+        className="text-center mb-8 transition-all duration-300"
+        style={{
+          opacity: revealed ? 1 : 1 - swipeProgress * 0.3,
+          transform: `translateY(${revealed ? 0 : -swipeProgress * 10}px)`,
+        }}
+      >
         <p className="text-muted-foreground uppercase tracking-wide text-sm mb-2">
           Pásale el celular a...
         </p>
@@ -116,8 +138,7 @@ export function RoleReveal({
 
       {/* Role Card */}
       <Card
-        ref={cardRef}
-        className={`w-full max-w-sm transition-all duration-500 ${
+        className={`w-full max-w-sm overflow-hidden ${
           revealed
             ? isImpostor
               ? "neon-glow-pink border-secondary"
@@ -129,83 +150,157 @@ export function RoleReveal({
         onTouchEnd={handleTouchEnd}
         style={{
           transform: !revealed
-            ? `translateY(${-swipeProgress * 10}px)`
+            ? `translateY(${cardY}px) scale(${cardScale})`
             : undefined,
+          transition:
+            swipeProgress === 0 && !isRevealing
+              ? "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease"
+              : isRevealing
+              ? "all 0.3s ease-out"
+              : "none",
         }}
       >
-        <CardContent className="p-8 text-center min-h-[300px] flex flex-col items-center justify-center">
-          {!revealed ? (
-            <>
-              {/* Swipe indicator animado */}
-              <div className="relative mb-4">
+        <CardContent className="p-8 text-center min-h-[320px] flex flex-col items-center justify-center relative">
+          {/* Hidden content layer (blurred preview) */}
+          {!revealed && (
+            <div
+              className="absolute inset-0 flex flex-col items-center justify-center p-8 transition-all"
+              style={{
+                filter: `blur(${blurAmount}px)`,
+                opacity: contentOpacity,
+                transform: `scale(${0.9 + swipeProgress * 0.1})`,
+              }}
+            >
+              {isImpostor ? (
+                <>
+                  <div className="text-6xl mb-4">🎭</div>
+                  <h3 className="text-3xl font-black text-neon-pink">
+                    ERES EL FEKA
+                  </h3>
+                </>
+              ) : (
+                <>
+                  <div className="text-6xl mb-4">✓</div>
+                  <h3 className="text-3xl font-black text-neon-green">
+                    ERES REAL
+                  </h3>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Overlay/Instruction layer */}
+          {!revealed && (
+            <div
+              className="relative z-10 flex flex-col items-center justify-center transition-all"
+              style={{
+                opacity: overlayOpacity,
+                transform: `translateY(${-swipeProgress * 30}px)`,
+              }}
+            >
+              {/* Icon transition */}
+              <div className="relative w-20 h-20 mb-4">
                 <EyeOff
-                  className="w-16 h-16 text-muted-foreground transition-opacity"
-                  style={{ opacity: 1 - swipeProgress }}
+                  className="w-20 h-20 text-muted-foreground absolute inset-0 transition-all duration-200"
+                  style={{
+                    opacity: 1 - swipeProgress,
+                    transform: `scale(${1 - swipeProgress * 0.2})`,
+                  }}
                 />
                 <Eye
-                  className="w-16 h-16 text-neon-green absolute top-0 left-0 transition-opacity"
-                  style={{ opacity: swipeProgress }}
+                  className="w-20 h-20 text-neon-green absolute inset-0 transition-all duration-200"
+                  style={{
+                    opacity: swipeProgress,
+                    transform: `scale(${0.8 + swipeProgress * 0.2})`,
+                  }}
                 />
               </div>
 
-              <p className="text-muted-foreground uppercase tracking-wide mb-4">
+              <p className="text-muted-foreground uppercase tracking-wide mb-6 text-sm">
                 Solo tú debes ver esto
               </p>
 
-              {/* Swipe up indicator */}
-              <div className="flex flex-col items-center gap-2 mb-4">
+              {/* Swipe indicator */}
+              <div className="flex flex-col items-center">
                 <div
-                  className="flex flex-col items-center transition-transform"
+                  className="flex flex-col items-center"
                   style={{
-                    transform: `translateY(${-swipeProgress * 20}px)`,
+                    transform: `translateY(${-swipeProgress * 25}px)`,
                   }}
                 >
                   <ChevronUp
-                    className={`w-6 h-6 animate-bounce ${
-                      swipeProgress > 0
-                        ? "text-neon-green"
-                        : "text-muted-foreground"
-                    }`}
-                  />
-                  <ChevronUp
-                    className={`w-6 h-6 -mt-3 animate-bounce ${
-                      swipeProgress > 0.5
-                        ? "text-neon-green"
-                        : "text-muted-foreground"
-                    }`}
-                    style={{ animationDelay: "0.1s" }}
+                    className="w-8 h-8 text-muted-foreground animate-bounce"
+                    style={{
+                      color:
+                        swipeProgress > 0.5 ? "var(--neon-green)" : undefined,
+                      opacity: 1 - swipeProgress * 0.5,
+                    }}
                   />
                 </div>
-                <p
-                  className={`text-sm uppercase font-bold transition-colors ${
-                    swipeProgress > 0
-                      ? "text-neon-green"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {swipeProgress >= 1 ? "¡Suelta!" : "Desliza arriba"}
+
+                {/* Progress ring */}
+                <div className="relative w-16 h-16 mt-2">
+                  <svg className="w-16 h-16 -rotate-90" viewBox="0 0 36 36">
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="16"
+                      fill="none"
+                      className="stroke-muted"
+                      strokeWidth="2"
+                    />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="16"
+                      fill="none"
+                      className="stroke-neon-green"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeDasharray={`${swipeProgress * 100} 100`}
+                      style={{
+                        transition:
+                          swipeProgress === 0
+                            ? "stroke-dasharray 0.3s ease"
+                            : "none",
+                      }}
+                    />
+                  </svg>
+                  <span
+                    className="absolute inset-0 flex items-center justify-center text-xs font-bold uppercase transition-colors"
+                    style={{
+                      color:
+                        swipeProgress >= 1 ? "var(--neon-green)" : undefined,
+                    }}
+                  >
+                    {swipeProgress >= 1
+                      ? "¡Ya!"
+                      : `${Math.round(swipeProgress * 100)}%`}
+                  </span>
+                </div>
+
+                <p className="text-muted-foreground text-xs uppercase mt-3 font-medium">
+                  {swipeProgress >= 1
+                    ? "Suelta para revelar"
+                    : "Desliza hacia arriba"}
                 </p>
               </div>
 
-              {/* Progress bar */}
-              <div className="w-full h-1 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-neon-green transition-all duration-100"
-                  style={{ width: `${swipeProgress * 100}%` }}
-                />
-              </div>
-
-              {/* Fallback button para desktop */}
+              {/* Desktop fallback */}
               <Button
                 onClick={handleReveal}
                 variant="ghost"
-                className="mt-4 text-xs text-muted-foreground hover:text-foreground"
+                size="sm"
+                className="mt-6 text-xs text-muted-foreground/50 hover:text-muted-foreground"
               >
                 o toca aquí
               </Button>
-            </>
-          ) : (
-            <>
+            </div>
+          )}
+
+          {/* Revealed content */}
+          {revealed && (
+            <div className="animate-scale-in">
               {isImpostor ? (
                 <>
                   <div className="text-6xl mb-4">🎭</div>
@@ -248,7 +343,7 @@ export function RoleReveal({
                   </p>
                 </>
               )}
-            </>
+            </div>
           )}
         </CardContent>
       </Card>
