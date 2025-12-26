@@ -272,17 +272,6 @@ export function RoleReveal({
                       }}
                     />
                   </svg>
-                  <span
-                    className="absolute inset-0 flex items-center justify-center text-xs font-bold uppercase transition-colors"
-                    style={{
-                      color:
-                        swipeProgress >= 1 ? "var(--neon-green)" : undefined,
-                    }}
-                  >
-                    {swipeProgress >= 1
-                      ? "¡Ya!"
-                      : `${Math.round(swipeProgress * 100)}%`}
-                  </span>
                 </div>
 
                 <p className="text-muted-foreground text-xs uppercase mt-3 font-medium">
