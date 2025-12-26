@@ -180,8 +180,9 @@ export default function ElFekaGame() {
       );
       realesWin = impostorsWithVotes.length === 2; // Ambos deben tener votos
     } else {
-      // En modo 1 impostor: REALES ganan si el más votado es el impostor
-      realesWin = state.impostorIndices.includes(votedOutIndex);
+      // En modo 1 impostor: REALES ganan si el impostor tiene los votos máximos (o empata)
+      const impostorVotes = voteCounts[state.impostorIndices[0]];
+      realesWin = impostorVotes >= maxVotes && impostorVotes > 0;
     }
 
     // Update scores

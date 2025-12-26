@@ -52,7 +52,9 @@ export function ResultsScreen({
     );
     realesWin = impostorsWithVotes.length === 2;
   } else {
-    realesWin = impostorIndices.includes(votedOutIndex);
+    // En modo 1 impostor: REALES ganan si el impostor tiene los votos máximos (o empata)
+    const impostorVotes = voteCounts[impostorIndices[0]];
+    realesWin = impostorVotes >= maxVotes && impostorVotes > 0;
   }
 
   // Calculate who guessed correctly (votó por algún impostor)
