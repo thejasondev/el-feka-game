@@ -7,6 +7,7 @@ import { RoleReveal } from "@/components/game/role-reveal";
 import { TimerPhase } from "@/components/game/timer-phase";
 import { IndividualVoting } from "@/components/game/individual-voting";
 import { ResultsScreen } from "@/components/game/results-screen";
+import { RulesSheet } from "@/components/game/rules-sheet";
 import {
   getRandomWord,
   selectImpostors,
@@ -230,89 +231,93 @@ export default function ElFekaGame() {
     setGameState(initialState);
   }, []);
 
-  // Render based on game phase
-  switch (gameState.phase) {
-    case "setup":
-      return <SetupScreen onStartGame={handleStartGame} />;
+  // Render content based on game phase
+  const renderPhaseContent = () => {
+    switch (gameState.phase) {
+      case "setup":
+        return <SetupScreen onStartGame={handleStartGame} />;
 
-    case "playerSetup":
-      return (
-        <PlayerSetup
-          playerCount={gameState.playerCount}
-          onConfirmPlayers={handleConfirmPlayers}
-          onBack={handleBackToSetup}
-        />
-      );
+      case "playerSetup":
+        return (
+          <PlayerSetup
+            playerCount={gameState.playerCount}
+            onConfirmPlayers={handleConfirmPlayers}
+            onBack={handleBackToSetup}
+          />
+        );
 
-    case "roleReveal":
-      const currentImpostorIndex = gameState.impostorIndices.indexOf(
-        gameState.currentPlayerIndex
-      );
-      const isCurrentPlayerImpostor = currentImpostorIndex !== -1;
-      // Find partner for 2 impostors mode
-      const partnerIndex = isCurrentPlayerImpostor
-        ? gameState.impostorIndices.find(
-            (i) => i !== gameState.currentPlayerIndex
-          )
-        : undefined;
+      case "roleReveal":
+        const currentImpostorIndex = gameState.impostorIndices.indexOf(
+          gameState.currentPlayerIndex
+        );
+        const isCurrentPlayerImpostor = currentImpostorIndex !== -1;
+        // Find partner for 2 impostors mode
+        const partnerIndex = isCurrentPlayerImpostor
+          ? gameState.impostorIndices.find(
+              (i) => i !== gameState.currentPlayerIndex
+            )
+          : undefined;
 
-      return (
-        <RoleReveal
-          playerName={gameState.players[gameState.currentPlayerIndex]}
-          currentPlayerIndex={gameState.currentPlayerIndex}
-          totalPlayers={gameState.playerCount}
-          isImpostor={isCurrentPlayerImpostor}
-          secretWord={gameState.secretWord}
-          categoryName={gameState.categoryName}
-          hasPartner={gameState.twoImpostors && isCurrentPlayerImpostor}
-          partnerName={
-            partnerIndex !== undefined
-              ? gameState.players[partnerIndex]
-              : undefined
-          }
-          onNext={handleNextPlayer}
-        />
-      );
+        return (
+          <RoleReveal
+            playerName={gameState.players[gameState.currentPlayerIndex]}
+            currentPlayerIndex={gameState.currentPlayerIndex}
+            totalPlayers={gameState.playerCount}
+            isImpostor={isCurrentPlayerImpostor}
+            secretWord={gameState.secretWord}
+            categoryName={gameState.categoryName}
+            hasPartner={gameState.twoImpostors && isCurrentPlayerImpostor}
+            partnerName={
+              partnerIndex !== undefined
+                ? gameState.players[partnerIndex]
+                : undefined
+            }
+            onNext={handleNextPlayer}
+          />
+        );
 
-    case "timer":
-      return (
-        <TimerPhase
-          duration={gameState.timerDuration}
-          secretWord={gameState.secretWord}
-          categoryName={gameState.categoryName}
-          onVotingStart={handleVotingStart}
-        />
-      );
+      case "timer":
+        return (
+          <TimerPhase
+            duration={gameState.timerDuration}
+            secretWord={gameState.secretWord}
+            categoryName={gameState.categoryName}
+            onVotingStart={handleVotingStart}
+          />
+        );
 
-    case "voting":
-      return (
-        <IndividualVoting
-          players={gameState.players}
-          currentVoterIndex={gameState.currentVoterIndex}
-          onVote={handleIndividualVote}
-          onSkipToResults={handleSkipToResults}
-          votesCollected={gameState.votes.length}
-          twoImpostors={gameState.twoImpostors}
-        />
-      );
+      case "voting":
+        return (
+          <IndividualVoting
+            players={gameState.players}
+            currentVoterIndex={gameState.currentVoterIndex}
+            onVote={handleIndividualVote}
+            onSkipToResults={handleSkipToResults}
+            votesCollected={gameState.votes.length}
+            twoImpostors={gameState.twoImpostors}
+          />
+        );
 
-    case "results":
-      return (
-        <ResultsScreen
-          players={gameState.players}
-          impostorIndices={gameState.impostorIndices}
-          secretWord={gameState.secretWord}
-          categoryName={gameState.categoryName}
-          votes={gameState.votes}
-          scores={gameState.scores}
-          streak={gameState.streak}
-          twoImpostors={gameState.twoImpostors}
-          onPlayAgain={handlePlayAgain}
-          onNewGame={handleNewGame}
-        />
-      );
+      case "results":
+        return (
+          <ResultsScreen
+            players={gameState.players}
+            impostorIndices={gameState.impostorIndices}
+            secretWord={gameState.secretWord}
+            categoryName={gameState.categoryName}
+            votes={gameState.votes}
+            scores={gameState.scores}
+            streak={gameState.streak}
+            twoImpostors={gameState.twoImpostors}
+            onPlayAgain={handlePlayAgain}
+            onNewGame={handleNewGame}
+          />
+        );
 
-    default:
-      return <SetupScreen onStartGame={handleStartGame} />;
-  }
+      default:
+        return <SetupScreen onStartGame={handleStartGame} />;
+    }
+  };
+
+  return renderPhaseContent();
 }

@@ -21,10 +21,10 @@ export function RulesSheet() {
         <Button
           variant="ghost"
           size="icon"
-          className="fixed top-10 sm:top-12 right-4 sm:right-6 z-50 w-10 h-10 rounded-full bg-muted/70 backdrop-blur-sm text-foreground hover:bg-neon-green/20 hover:text-neon-green border border-border/50 flex items-center justify-center shadow-lg transition-colors"
+          className="absolute top-8 sm:top-10 right-0 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-muted/70 backdrop-blur-sm text-foreground hover:bg-neon-green/20 hover:text-neon-green border border-border/50 flex items-center justify-center shadow-lg transition-colors"
           aria-label="¿Cómo jugar?"
         >
-          <HelpCircle className="w-5 h-5" />
+          <HelpCircle className="w-4 h-4 sm:w-5 sm:h-5" />
         </Button>
       </DrawerTrigger>
       <DrawerContent className="max-h-[90vh] sm:max-h-[85vh] touch-none">
