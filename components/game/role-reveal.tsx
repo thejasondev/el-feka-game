@@ -71,10 +71,16 @@ export function RoleReveal({
       const progress = Math.min(deltaY / SWIPE_THRESHOLD, 1);
       setSwipeProgress(progress);
 
-      // Haptic feedback al 75% y 100%
+      // Haptic feedback al 75%
       if (progress >= 0.75 && !hasTriggeredHaptic.current) {
         haptic.light();
         hasTriggeredHaptic.current = true;
+      }
+
+      // Auto-reveal al llegar al 100% - transición inmediata sin esperar touchEnd
+      if (progress >= 1) {
+        touchStartY.current = null;
+        handleReveal();
       }
     } else {
       setSwipeProgress(0);
