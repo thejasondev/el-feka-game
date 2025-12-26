@@ -135,14 +135,16 @@ export function ResultsScreen({
       <ScrollArea className="flex-1 mb-4">
         <div className="space-y-2">
           {players.map((player, index) => {
-            // Skip the impostor in this list
-            if (index === impostorIndex) return null;
+            // Skip all impostors in this list
+            if (impostorIndices.includes(index)) return null;
 
             const playerVote = votes.find((v) => v.voterIndex === index);
-            const guessedCorrectly =
-              playerVote?.votedForIndex === impostorIndex;
+            // Check if player voted for ANY impostor
+            const guessedCorrectly = playerVote?.votedForIndices.some((idx) =>
+              impostorIndices.includes(idx)
+            );
             const votedFor = playerVote
-              ? players[playerVote.votedForIndex]
+              ? playerVote.votedForIndices.map((i) => players[i]).join(", ")
               : "No votó";
 
             return (
@@ -190,31 +192,36 @@ export function ResultsScreen({
             );
           })}
 
-          {/* Show impostor's result */}
-          <Card className="border-neon-pink/50 bg-neon-pink/10">
-            <CardContent className="p-3 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-neon-pink/20">
-                  <span className="text-sm">😈</span>
+          {/* Show all impostors' results */}
+          {impostorIndices.map((impostorIdx) => (
+            <Card
+              key={`impostor-${impostorIdx}`}
+              className="border-neon-pink/50 bg-neon-pink/10"
+            >
+              <CardContent className="p-3 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center bg-neon-pink/20">
+                    <span className="text-sm">😈</span>
+                  </div>
+                  <div>
+                    <span className="font-bold uppercase text-sm text-neon-pink">
+                      {players[impostorIdx]}
+                    </span>
+                    <span className="text-muted-foreground text-xs block">
+                      {twoImpostors ? "FEKA" : "EL FEKA"}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className="font-bold uppercase text-sm text-neon-pink">
-                    {players[impostorIndex]}
-                  </span>
-                  <span className="text-muted-foreground text-xs block">
-                    EL FEKA
-                  </span>
-                </div>
-              </div>
-              <span
-                className={`font-black text-lg ${
-                  realesWin ? "text-muted-foreground" : "text-neon-pink"
-                }`}
-              >
-                {realesWin ? "0" : "+2"}
-              </span>
-            </CardContent>
-          </Card>
+                <span
+                  className={`font-black text-lg ${
+                    realesWin ? "text-muted-foreground" : "text-neon-pink"
+                  }`}
+                >
+                  {realesWin ? "0" : "+2"}
+                </span>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </ScrollArea>
 
@@ -233,7 +240,7 @@ export function ResultsScreen({
                 <div
                   key={index}
                   className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                    index === impostorIndex
+                    impostorIndices.includes(index)
                       ? "bg-neon-pink/20 text-neon-pink"
                       : "bg-muted text-foreground"
                   }`}

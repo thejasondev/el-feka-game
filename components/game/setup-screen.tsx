@@ -74,20 +74,42 @@ export function SetupScreen({ onStartGame }: SetupScreenProps) {
           </div>
         </CardContent>
       </Card>
-
+      {/* Two Impostors Mode */}
       <Card
-        className={`bg-card border-border mb-4 ${
-          !canHaveTwoImpostors ? "opacity-50" : ""
+        className={`bg-card border-border mb-4 transition-all ${
+          !canHaveTwoImpostors
+            ? "opacity-50"
+            : twoImpostors
+            ? "border-neon-pink neon-glow-pink"
+            : ""
         }`}
       >
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <UserX className="w-5 h-5 text-neon-pink" />
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  twoImpostors ? "bg-neon-pink/20" : "bg-muted"
+                }`}
+              >
+                <UserX
+                  className={`w-5 h-5 ${
+                    twoImpostors ? "text-neon-pink" : "text-muted-foreground"
+                  }`}
+                />
+              </div>
               <div>
-                <h3 className="font-bold uppercase text-sm">2 FEKAS</h3>
+                <h3
+                  className={`font-bold uppercase text-sm ${
+                    twoImpostors ? "text-neon-pink" : ""
+                  }`}
+                >
+                  2 FEKAS
+                </h3>
                 <p className="text-xs text-muted-foreground">
-                  Modo caos (6+ jugadores)
+                  {canHaveTwoImpostors
+                    ? "Modo caos activable"
+                    : "Requiere 6+ jugadores"}
                 </p>
               </div>
             </div>
@@ -95,6 +117,7 @@ export function SetupScreen({ onStartGame }: SetupScreenProps) {
               checked={twoImpostors}
               onCheckedChange={setTwoImpostors}
               disabled={!canHaveTwoImpostors}
+              className="data-[state=checked]:bg-neon-pink data-[state=unchecked]:bg-muted-foreground/30 data-[state=unchecked]:border data-[state=unchecked]:border-muted-foreground/50"
             />
           </div>
         </CardContent>

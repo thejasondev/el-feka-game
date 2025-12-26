@@ -208,25 +208,27 @@ export function IndividualVoting({
         <Button
           onClick={handleConfirm}
           disabled={selectedPlayers.length !== requiredVotes || confirmed}
-          className="w-full h-14 text-lg font-black uppercase neon-glow-pink bg-secondary text-secondary-foreground hover:bg-secondary/90 disabled:opacity-50"
+          className="w-full h-14 text-sm sm:text-lg font-black uppercase neon-glow-pink bg-secondary text-secondary-foreground hover:bg-secondary/90 disabled:opacity-50"
         >
           {confirmed ? (
             <>
-              <Check className="w-5 h-5 mr-2" />
+              <Check className="w-5 h-5 mr-2 shrink-0" />
               ¡VOTADO!
             </>
           ) : (
             <>
-              <Flame className="w-5 h-5 mr-2" />
-              {selectedPlayers.length === requiredVotes
-                ? twoImpostors
-                  ? `QUEMAR A ${selectedPlayers
-                      .map((i) => players[i].toUpperCase())
-                      .join(" Y ")}`
-                  : `QUEMAR A ${players[selectedPlayers[0]].toUpperCase()}`
-                : twoImpostors
-                ? `SELECCIONA ${requiredVotes} SOSPECHOSOS`
-                : "SELECCIONA AL FEKA"}
+              <Flame className="w-5 h-5 mr-2 shrink-0" />
+              <span className="truncate">
+                {selectedPlayers.length === requiredVotes
+                  ? twoImpostors
+                    ? `QUEMAR: ${selectedPlayers
+                        .map((i) => players[i])
+                        .join(" + ")}`
+                    : `QUEMAR A ${players[selectedPlayers[0]].toUpperCase()}`
+                  : twoImpostors
+                  ? `ELIGE ${requiredVotes - selectedPlayers.length} MÁS`
+                  : "SELECCIONA AL FEKA"}
+              </span>
             </>
           )}
         </Button>
