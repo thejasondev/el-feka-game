@@ -56,10 +56,11 @@ export const metadata: Metadata = {
     siteName: "EL FEKA",
     images: [
       {
-        url: "/og-image.png",
+        url: "https://elfeka.vercel.app/og-image.png",
         width: 1200,
         height: 630,
         alt: "EL FEKA - Juego del Impostor",
+        type: "image/png",
       },
     ],
     locale: "es_ES",
@@ -71,7 +72,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "EL FEKA - Juego del Impostor",
     description: "¿Quién es el FEKA? El juego social de engaño y diversión.",
-    images: ["/og-image.png"],
+    images: ["https://elfeka.vercel.app/og-image.png"],
   },
 
   // Icons - usando los nuevos iconos generados
