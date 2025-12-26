@@ -21,7 +21,7 @@ export function RulesSheet() {
         <Button
           variant="ghost"
           size="icon"
-          className="absolute mt-16 top-4 right-4 safe-top z-10 bg-muted/60 backdrop-blur-sm text-foreground hover:bg-neon-green/20 hover:text-neon-green border border-border/50 flex items-center justify-center"
+          className="fixed top-6 right-4 z-50 w-10 h-10 rounded-full bg-muted/70 backdrop-blur-sm text-foreground hover:bg-neon-green/20 hover:text-neon-green border border-border/50 flex items-center justify-center shadow-lg"
           aria-label="¿Cómo jugar?"
         >
           <HelpCircle className="w-5 h-5" />
@@ -34,7 +34,7 @@ export function RulesSheet() {
               <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
               ¿Cómo jugar?
             </DrawerTitle>
-            <DrawerDescription className="text-xs sm:text-sm">
+            <DrawerDescription className="text-xs font-bold sm:text-sm text-left">
               Guía rápida para jugar EL FEKA
             </DrawerDescription>
           </DrawerHeader>
