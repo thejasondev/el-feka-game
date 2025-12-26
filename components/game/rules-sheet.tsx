@@ -21,7 +21,7 @@ export function RulesSheet() {
         <Button
           variant="ghost"
           size="icon"
-          className="fixed top-6 right-4 z-50 w-10 h-10 rounded-full bg-muted/70 backdrop-blur-sm text-foreground hover:bg-neon-green/20 hover:text-neon-green border border-border/50 flex items-center justify-center shadow-lg"
+          className="fixed top-14 right-4 z-50 w-10 h-10 rounded-full bg-muted/70 backdrop-blur-sm text-foreground hover:bg-neon-green/20 hover:text-neon-green border border-border/50 flex items-center justify-center shadow-lg"
           aria-label="¿Cómo jugar?"
         >
           <HelpCircle className="w-5 h-5" />
