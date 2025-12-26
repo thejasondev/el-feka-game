@@ -132,7 +132,7 @@ export const CATEGORIES = {
     ],
   },
   asere: {
-    name: "ASERE",
+    name: "CUBA",
     emoji: "🇨🇺",
     words: [
       "Asere",

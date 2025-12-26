@@ -8,44 +8,58 @@ import { haptic } from "@/lib/haptics";
 
 interface PlayerVote {
   voterIndex: number;
-  votedForIndex: number;
+  votedForIndices: number[];
 }
 
 interface ResultsScreenProps {
   players: string[];
-  impostorIndex: number;
+  impostorIndices: number[];
   secretWord: string;
   categoryName: string;
   votes: PlayerVote[];
   scores: number[];
   streak: number;
+  twoImpostors: boolean;
   onPlayAgain: () => void;
   onNewGame: () => void;
 }
 
 export function ResultsScreen({
   players,
-  impostorIndex,
+  impostorIndices,
   secretWord,
   categoryName,
   votes,
   scores,
   streak,
+  twoImpostors,
   onPlayAgain,
   onNewGame,
 }: ResultsScreenProps) {
+  // Contar votos (aplanando arrays)
   const voteCounts = players.map(
-    (_, index) => votes.filter((v) => v.votedForIndex === index).length
+    (_, index) => votes.filter((v) => v.votedForIndices.includes(index)).length
   );
   const maxVotes = Math.max(...voteCounts);
   const votedOutIndex = voteCounts.indexOf(maxVotes);
 
-  // Check if impostor was caught
-  const realesWin = votedOutIndex === impostorIndex;
+  // Lógica de victoria según modo
+  let realesWin: boolean;
+  if (twoImpostors) {
+    // En modo 2 impostores: REALES ganan si AMBOS impostores reciben votos
+    const impostorsWithVotes = impostorIndices.filter(
+      (idx) => voteCounts[idx] > 0
+    );
+    realesWin = impostorsWithVotes.length === 2;
+  } else {
+    realesWin = impostorIndices.includes(votedOutIndex);
+  }
 
-  // Calculate who guessed correctly
+  // Calculate who guessed correctly (votó por algún impostor)
   const correctGuessers = votes
-    .filter((v) => v.votedForIndex === impostorIndex)
+    .filter((v) =>
+      v.votedForIndices.some((idx) => impostorIndices.includes(idx))
+    )
     .map((v) => v.voterIndex);
 
   return (
@@ -62,10 +76,20 @@ export function ResultsScreen({
             realesWin ? "text-neon-green" : "text-neon-pink"
           } animate-pulse-neon`}
         >
-          {realesWin ? "¡SACARON AL FEKA!" : "¡EL FEKA CORONÓ!"}
+          {realesWin
+            ? twoImpostors
+              ? "¡SACARON A LOS FEKAS!"
+              : "¡SACARON AL FEKA!"
+            : twoImpostors
+            ? "¡LOS FEKAS CORONARON!"
+            : "¡EL FEKA CORONÓ!"}
         </h2>
         <p className="text-muted-foreground mt-2 text-sm uppercase">
-          {realesWin ? "Los REALES ganan esta ronda" : "El FEKA engañó a todos"}
+          {realesWin
+            ? "Los REALES ganan esta ronda"
+            : twoImpostors
+            ? "Al menos un FEKA escapó"
+            : "El FEKA engañó a todos"}
         </p>
 
         {/* Streak indicator */}
@@ -84,10 +108,12 @@ export function ResultsScreen({
         <CardContent className="p-4 space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground uppercase text-xs">
-              El FEKA era:
+              {twoImpostors ? "Los FEKAS eran:" : "El FEKA era:"}
             </span>
             <span className="text-xl font-black text-neon-pink">
-              {players[impostorIndex]}
+              {twoImpostors
+                ? impostorIndices.map((i) => players[i]).join(" y ")
+                : players[impostorIndices[0]]}
             </span>
           </div>
           <div className="border-t border-border pt-3">

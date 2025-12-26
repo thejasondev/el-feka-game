@@ -10,9 +10,10 @@ import { haptic } from "@/lib/haptics";
 interface IndividualVotingProps {
   players: string[];
   currentVoterIndex: number;
-  onVote: (votedPlayerIndex: number) => void;
+  onVote: (votedPlayerIndices: number[]) => void;
   onSkipToResults: () => void;
   votesCollected: number;
+  twoImpostors: boolean;
 }
 
 export function IndividualVoting({
@@ -21,12 +22,14 @@ export function IndividualVoting({
   onVote,
   onSkipToResults,
   votesCollected,
+  twoImpostors,
 }: IndividualVotingProps) {
   const [revealed, setRevealed] = useState(false);
-  const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null);
+  const [selectedPlayers, setSelectedPlayers] = useState<number[]>([]);
   const [confirmed, setConfirmed] = useState(false);
 
   const currentVoter = players[currentVoterIndex];
+  const requiredVotes = twoImpostors ? 2 : 1;
 
   const handleReveal = () => {
     haptic.light();
@@ -36,18 +39,30 @@ export function IndividualVoting({
   const handleSelectPlayer = (index: number) => {
     if (index === currentVoterIndex || confirmed) return;
     haptic.light();
-    setSelectedPlayer(index);
+
+    setSelectedPlayers((prev) => {
+      // Si ya está seleccionado, lo deseleccionamos
+      if (prev.includes(index)) {
+        return prev.filter((i) => i !== index);
+      }
+      // Si ya tenemos el máximo de votos, reemplazamos el primero
+      if (prev.length >= requiredVotes) {
+        return [...prev.slice(1), index];
+      }
+      // Agregamos el nuevo voto
+      return [...prev, index];
+    });
   };
 
   const handleConfirm = () => {
-    if (selectedPlayer !== null) {
+    if (selectedPlayers.length === requiredVotes) {
       haptic.success();
       setConfirmed(true);
       setTimeout(() => {
-        onVote(selectedPlayer);
+        onVote(selectedPlayers);
         // Reset state for next voter
         setRevealed(false);
-        setSelectedPlayer(null);
+        setSelectedPlayers([]);
         setConfirmed(false);
       }, 1200);
     }
@@ -70,6 +85,11 @@ export function IndividualVoting({
           <p className="text-muted-foreground mt-4 text-sm">
             Voto {votesCollected + 1} de {players.length}
           </p>
+          {twoImpostors && (
+            <p className="text-neon-cyan mt-2 text-xs font-bold uppercase">
+              ⚠️ Elige a 2 sospechosos
+            </p>
+          )}
         </div>
 
         <Button
@@ -104,11 +124,17 @@ export function IndividualVoting({
       {/* Header */}
       <div className="text-center mb-4 pt-6">
         <p className="text-muted-foreground uppercase text-xs mb-1">
-          {currentVoter}, ¿quién es...
+          {currentVoter}, ¿quién{twoImpostors ? "es son" : " es"}...
         </p>
         <h2 className="text-3xl md:text-4xl font-black uppercase text-neon-pink animate-pulse-neon">
-          EL FEKA?
+          {twoImpostors ? "LOS FEKAS?" : "EL FEKA?"}
         </h2>
+        {twoImpostors && (
+          <p className="text-neon-cyan text-xs mt-2 font-bold">
+            Selecciona {requiredVotes - selectedPlayers.length} sospechoso
+            {requiredVotes - selectedPlayers.length !== 1 ? "s" : ""} más
+          </p>
+        )}
       </div>
 
       {/* Progress indicator */}
@@ -132,27 +158,36 @@ export function IndividualVoting({
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-1">
           {players.map((player, index) => {
             const isSelf = index === currentVoterIndex;
+            const isSelected = selectedPlayers.includes(index);
+            const selectionOrder = selectedPlayers.indexOf(index) + 1;
+
             return (
               <Card
                 key={index}
                 className={`transition-all duration-200 ${
                   isSelf
                     ? "opacity-40 cursor-not-allowed"
-                    : selectedPlayer === index
+                    : isSelected
                     ? "neon-glow-pink border-secondary bg-secondary/20 cursor-pointer scale-[1.02]"
                     : "bg-card border-border hover:border-muted-foreground cursor-pointer active:scale-95"
-                } ${confirmed && selectedPlayer === index ? "scale-105" : ""}`}
+                } ${confirmed && isSelected ? "scale-105" : ""}`}
                 onClick={() => handleSelectPlayer(index)}
               >
-                <CardContent className="p-4 text-center min-h-[80px] flex flex-col items-center justify-center">
+                <CardContent className="p-4 text-center min-h-[80px] flex flex-col items-center justify-center relative">
+                  {/* Selection badge for 2 impostors mode */}
+                  {twoImpostors && isSelected && (
+                    <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-neon-pink text-background text-xs font-black flex items-center justify-center">
+                      {selectionOrder}
+                    </div>
+                  )}
                   <div
                     className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all ${
-                      selectedPlayer === index
+                      isSelected
                         ? "bg-secondary text-secondary-foreground"
                         : "bg-muted text-foreground"
                     }`}
                   >
-                    {selectedPlayer === index ? (
+                    {isSelected ? (
                       <Flame className="w-6 h-6 animate-pulse" />
                     ) : (
                       <span className="text-lg font-black">{index + 1}</span>
@@ -172,7 +207,7 @@ export function IndividualVoting({
       <div className="pb-6 safe-bottom">
         <Button
           onClick={handleConfirm}
-          disabled={selectedPlayer === null || confirmed}
+          disabled={selectedPlayers.length !== requiredVotes || confirmed}
           className="w-full h-14 text-lg font-black uppercase neon-glow-pink bg-secondary text-secondary-foreground hover:bg-secondary/90 disabled:opacity-50"
         >
           {confirmed ? (
@@ -183,8 +218,14 @@ export function IndividualVoting({
           ) : (
             <>
               <Flame className="w-5 h-5 mr-2" />
-              {selectedPlayer !== null
-                ? `QUEMAR A ${players[selectedPlayer].toUpperCase()}`
+              {selectedPlayers.length === requiredVotes
+                ? twoImpostors
+                  ? `QUEMAR A ${selectedPlayers
+                      .map((i) => players[i].toUpperCase())
+                      .join(" Y ")}`
+                  : `QUEMAR A ${players[selectedPlayers[0]].toUpperCase()}`
+                : twoImpostors
+                ? `SELECCIONA ${requiredVotes} SOSPECHOSOS`
                 : "SELECCIONA AL FEKA"}
             </>
           )}
@@ -197,7 +238,7 @@ export function IndividualVoting({
           <div className="text-6xl mb-4">🔥</div>
           <Check className="w-16 h-16 text-neon-green mb-4" />
           <p className="text-neon-green text-2xl font-black uppercase">
-            ¡VOTO REGISTRADO!
+            ¡VOTO{twoImpostors ? "S" : ""} REGISTRADO{twoImpostors ? "S" : ""}!
           </p>
           <p className="text-muted-foreground mt-2 text-sm">
             Pasando al siguiente votante...
