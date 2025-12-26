@@ -57,7 +57,7 @@ export function PlayerSetup({
           </h2>
         </div>
         <p className="text-muted-foreground uppercase text-sm">
-          Pongan sus nombres, parceros
+          Asere, Pongan sus nombres
         </p>
       </div>
 
