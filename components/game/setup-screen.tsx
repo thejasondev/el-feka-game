@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -8,8 +9,13 @@ import { Switch } from "@/components/ui/switch";
 import { CATEGORIES, type CategoryKey } from "@/lib/game-data";
 import { Users, Timer, Play, UserX } from "lucide-react";
 import { haptic } from "@/lib/haptics";
-import { RulesSheet } from "@/components/game/rules-sheet";
 import { Footer } from "@/components/game/footer";
+
+// Dynamic import para evitar errores de hidratación con el Drawer
+const RulesSheet = dynamic(
+  () => import("@/components/game/rules-sheet").then((mod) => mod.RulesSheet),
+  { ssr: false }
+);
 
 interface SetupScreenProps {
   onStartGame: (
@@ -34,16 +40,22 @@ export function SetupScreen({ onStartGame }: SetupScreenProps) {
 
   return (
     <div className="min-h-screen bg-background p-4 flex flex-col safe-x animate-slide-in relative">
-      {/* Header */}
-      <div className="text-center mb-8 pt-8 safe-top relative">
-        {/* Help Button - dentro del header */}
-        <RulesSheet />
-        <h1 className="text-4xl sm:text-5xl md:text-7xl uppercase tracking-tight text-neon-green animate-pulse-neon title-graffiti">
-          EL FEKA
-        </h1>
-        <p className="text-muted-foreground mt-2 uppercase tracking-wide text-sm">
-          ¿Quién es el impostor?
-        </p>
+      {/* Header with Help Button */}
+      <div className="mb-8 pt-8 safe-top relative">
+        {/* Help Button - posición absoluta en esquina superior derecha */}
+        <div className="absolute top-8 right-0">
+          <RulesSheet />
+        </div>
+
+        {/* Título centrado */}
+        <div className="text-center pr-12">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl uppercase tracking-tight text-neon-green animate-pulse-neon title-graffiti">
+            EL FEKA
+          </h1>
+          <p className="text-muted-foreground mt-2 uppercase tracking-wide text-sm">
+            ¿Quién es el impostor?
+          </p>
+        </div>
       </div>
 
       {/* Player Count */}

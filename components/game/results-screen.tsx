@@ -66,7 +66,7 @@ export function ResultsScreen({
     <div className="min-h-screen bg-background p-4 flex flex-col safe-x animate-slide-in">
       {/* Result Banner */}
       <div
-        className={`text-center mb-6 pt-6 ${
+        className={`text-center mb-6 pt-8 mt-4 safe-top ${
           realesWin ? "neon-glow-green" : "neon-glow-pink"
         } p-6 rounded-2xl`}
       >
