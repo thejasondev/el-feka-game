@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, ArrowRight, ChevronUp, Sparkles } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, ChevronUp } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 import { useSwipe } from "@/hooks/use-swipe";
 
@@ -292,29 +292,33 @@ export function RoleReveal({
               </Button>
             </div>
 
-            {/* Preview borroso del contenido */}
-            <div
-              className="absolute inset-0 flex flex-col items-center justify-center p-8 z-10"
-              style={{
-                filter: `blur(${(1 - smoothProgress) * 20}px)`,
-                opacity: smoothProgress,
-                transform: `scale(${0.8 + smoothProgress * 0.2})`,
-              }}
-            >
-              {isImpostor ? (
-                <>
-                  <div className="text-6xl mb-4">🎭</div>
-                  <h3 className="text-3xl font-black text-neon-pink">
-                    EL FEKA
-                  </h3>
-                </>
-              ) : (
-                <>
-                  <div className="text-6xl mb-4">✓</div>
-                  <h3 className="text-3xl font-black text-neon-green">REAL</h3>
-                </>
-              )}
-            </div>
+            {/* Preview borroso del contenido - oculto cuando revealed */}
+            {!revealed && (
+              <div
+                className="absolute inset-0 flex flex-col items-center justify-center p-8 z-10"
+                style={{
+                  filter: `blur(${(1 - smoothProgress) * 20}px)`,
+                  opacity: smoothProgress,
+                  transform: `scale(${0.8 + smoothProgress * 0.2})`,
+                }}
+              >
+                {isImpostor ? (
+                  <>
+                    <div className="text-6xl mb-4">🎭</div>
+                    <h3 className="text-3xl font-black text-neon-pink">
+                      EL FEKA
+                    </h3>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-6xl mb-4">✓</div>
+                    <h3 className="text-3xl font-black text-neon-green">
+                      REAL
+                    </h3>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* Contenido Revelado */}
             {revealed && (
