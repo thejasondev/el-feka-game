@@ -120,6 +120,10 @@ export default function ElFekaGame() {
     setGameState((prev) => ({ ...prev, phase: "setup" }));
   }, []);
 
+  const handleReset = useCallback(() => {
+    setGameState(initialState);
+  }, []);
+
   const handleNextPlayer = useCallback(() => {
     setGameState((prev) => {
       const nextIndex = prev.currentPlayerIndex + 1;
@@ -274,6 +278,7 @@ export default function ElFekaGame() {
                 : undefined
             }
             onNext={handleNextPlayer}
+            onReset={handleReset}
           />
         );
 
@@ -284,6 +289,7 @@ export default function ElFekaGame() {
             secretWord={gameState.secretWord}
             categoryName={gameState.categoryName}
             onVotingStart={handleVotingStart}
+            onReset={handleReset}
           />
         );
 
