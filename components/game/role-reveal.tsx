@@ -174,17 +174,17 @@ export function RoleReveal({
 
         {/* Card Container */}
         <div className="relative w-full max-w-sm">
-          {/* Glow Effect */}
+          {/* Glow Effect - neutral during swipe, role-colored only after reveal */}
           <div
             className={`absolute inset-0 rounded-xl blur-xl transition-all duration-500 ${
               revealed
                 ? isImpostor
                   ? "bg-neon-pink/30"
                   : "bg-neon-green/30"
-                : "bg-transparent"
+                : "bg-neon-cyan/20"
             }`}
             style={{
-              opacity: revealed ? 1 : smoothProgress * 0.5,
+              opacity: revealed ? 1 : smoothProgress * 0.3,
               transform: `scale(${revealed ? 1.1 : 1 + smoothProgress * 0.1})`,
             }}
           />
@@ -310,31 +310,18 @@ export function RoleReveal({
                 </Button>
               </div>
 
-              {/* Preview borroso del contenido - oculto cuando revealed */}
+              {/* Preview borroso - neutral, sin revelar rol */}
               {!revealed && (
                 <div
                   className="absolute inset-0 flex flex-col items-center justify-center p-8 z-10"
                   style={{
-                    filter: `blur(${(1 - smoothProgress) * 20}px)`,
-                    opacity: smoothProgress,
-                    transform: `scale(${0.8 + smoothProgress * 0.2})`,
+                    filter: `blur(${(1 - smoothProgress) * 12}px)`,
+                    opacity: smoothProgress * 0.6,
+                    transform: `scale(${0.85 + smoothProgress * 0.15})`,
                   }}
                 >
-                  {isImpostor ? (
-                    <>
-                      <div className="text-6xl mb-4">🎭</div>
-                      <h3 className="text-3xl font-black text-neon-pink">
-                        EL FEKA
-                      </h3>
-                    </>
-                  ) : (
-                    <>
-                      <div className="text-6xl mb-4">✓</div>
-                      <h3 className="text-3xl font-black text-neon-green">
-                        REAL
-                      </h3>
-                    </>
-                  )}
+                  <div className="text-6xl mb-4">❓</div>
+                  <h3 className="text-3xl font-black text-neon-cyan">TU ROL</h3>
                 </div>
               )}
 
