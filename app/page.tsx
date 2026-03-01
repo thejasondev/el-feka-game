@@ -71,7 +71,7 @@ export default function ElFekaGame() {
       playerCount: number,
       category: CategoryKey,
       timerDuration: number,
-      twoImpostors: boolean
+      twoImpostors: boolean,
     ) => {
       setGameState((prev) => ({
         ...prev,
@@ -87,7 +87,7 @@ export default function ElFekaGame() {
             : Array(playerCount).fill(0),
       }));
     },
-    []
+    [],
   );
 
   const handleConfirmPlayers = useCallback(
@@ -113,7 +113,7 @@ export default function ElFekaGame() {
             : Array(players.length).fill(0),
       }));
     },
-    [gameState.category, gameState.twoImpostors]
+    [gameState.category, gameState.twoImpostors],
   );
 
   const handleBackToSetup = useCallback(() => {
@@ -169,7 +169,7 @@ export default function ElFekaGame() {
     // Contar votos para cada jugador (aplanando los arrays de votos)
     const voteCounts = state.players.map(
       (_, index) =>
-        state.votes.filter((v) => v.votedForIndices.includes(index)).length
+        state.votes.filter((v) => v.votedForIndices.includes(index)).length,
     );
     const maxVotes = Math.max(...voteCounts);
     const votedOutIndex = voteCounts.indexOf(maxVotes);
@@ -180,7 +180,7 @@ export default function ElFekaGame() {
     if (state.twoImpostors) {
       // En modo 2 impostores: REALES ganan si AMBOS impostores reciben al menos 1 voto
       const impostorsWithVotes = state.impostorIndices.filter(
-        (idx) => voteCounts[idx] > 0
+        (idx) => voteCounts[idx] > 0,
       );
       realesWin = impostorsWithVotes.length === 2; // Ambos deben tener votos
     } else {
@@ -253,18 +253,19 @@ export default function ElFekaGame() {
 
       case "roleReveal":
         const currentImpostorIndex = gameState.impostorIndices.indexOf(
-          gameState.currentPlayerIndex
+          gameState.currentPlayerIndex,
         );
         const isCurrentPlayerImpostor = currentImpostorIndex !== -1;
         // Find partner for 2 impostors mode
         const partnerIndex = isCurrentPlayerImpostor
           ? gameState.impostorIndices.find(
-              (i) => i !== gameState.currentPlayerIndex
+              (i) => i !== gameState.currentPlayerIndex,
             )
           : undefined;
 
         return (
           <RoleReveal
+            key={`reveal-${gameState.currentPlayerIndex}`}
             playerName={gameState.players[gameState.currentPlayerIndex]}
             currentPlayerIndex={gameState.currentPlayerIndex}
             totalPlayers={gameState.playerCount}
