@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Vote, Pause, Play, RotateCcw } from "lucide-react";
+import { Vote, Pause, Play, RotateCcw, Eye } from "lucide-react";
 import { haptic } from "@/lib/haptics";
+import { sounds } from "@/lib/sounds";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface TimerPhaseProps {
@@ -11,6 +12,9 @@ interface TimerPhaseProps {
   secretWord: string;
   categoryName: string;
   onVotingStart: () => void;
+  skipVoting?: boolean;
+  currentRound?: number;
+  totalRounds?: number;
   onReset?: () => void;
 }
 
@@ -19,6 +23,9 @@ export function TimerPhase({
   secretWord,
   categoryName,
   onVotingStart,
+  skipVoting = false,
+  currentRound,
+  totalRounds,
   onReset,
 }: TimerPhaseProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
@@ -64,13 +71,19 @@ export function TimerPhase({
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          haptic.heavy(); // Vibrate when time runs out
+          haptic.heavy();
+          sounds.timesUp();
           clearInterval(interval);
           return 0;
         }
-        // Haptic tick at critical times
+        // Critical last 10 seconds: haptic + sound every second
         if (prev <= 11 && prev > 1) {
           haptic.light();
+          sounds.timerCritical();
+        }
+        // Subtle tick every 30 seconds
+        else if (prev % 30 === 0) {
+          sounds.timerTick();
         }
         return prev - 1;
       });
@@ -122,6 +135,14 @@ export function TimerPhase({
 
         {/* Header */}
         <div className="text-center mb-6">
+          {/* Round badge */}
+          {totalRounds && totalRounds > 0 && currentRound && (
+            <div className="inline-flex items-center gap-2 bg-neon-green/10 border border-neon-green/30 px-4 py-1.5 rounded-full mb-3">
+              <span className="text-neon-green font-bold text-xs uppercase">
+                Ronda {currentRound} de {totalRounds}
+              </span>
+            </div>
+          )}
           <h2 className="text-2xl font-black uppercase text-neon-cyan mb-2">
             ¡A DEBATIR!
           </h2>
@@ -166,8 +187,8 @@ export function TimerPhase({
                 isCriticalTime
                   ? "text-neon-pink"
                   : isLowTime
-                  ? "text-secondary"
-                  : "text-neon-green"
+                    ? "text-secondary"
+                    : "text-neon-green"
               }`}
             />
           </svg>
@@ -184,8 +205,8 @@ export function TimerPhase({
                   isCriticalTime
                     ? "text-neon-pink"
                     : isLowTime
-                    ? "text-secondary"
-                    : "text-neon-green"
+                      ? "text-secondary"
+                      : "text-neon-green"
                 }`}
               >
                 {minutes}:{seconds.toString().padStart(2, "0")}
@@ -232,8 +253,17 @@ export function TimerPhase({
             onClick={handleVotingStart}
             className="flex-1 h-14 font-bold uppercase neon-glow-pink bg-secondary text-secondary-foreground hover:bg-secondary/90"
           >
-            <Vote className="w-5 h-5 mr-2" />
-            ¡VOTAR!
+            {skipVoting ? (
+              <>
+                <Eye className="w-5 h-5 mr-2" />
+                REVELAR FEKA
+              </>
+            ) : (
+              <>
+                <Vote className="w-5 h-5 mr-2" />
+                ¡VOTAR!
+              </>
+            )}
           </Button>
         </div>
 
@@ -248,8 +278,17 @@ export function TimerPhase({
               onClick={handleVotingStart}
               className="h-16 px-12 text-lg font-black uppercase neon-glow-pink bg-secondary text-secondary-foreground hover:bg-secondary/90"
             >
-              <Vote className="w-6 h-6 mr-2" />
-              IR A VOTACIÓN
+              {skipVoting ? (
+                <>
+                  <Eye className="w-6 h-6 mr-2" />
+                  REVELAR FEKA
+                </>
+              ) : (
+                <>
+                  <Vote className="w-6 h-6 mr-2" />
+                  IR A VOTACIÓN
+                </>
+              )}
             </Button>
           </div>
         )}

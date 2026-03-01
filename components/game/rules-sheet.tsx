@@ -3,7 +3,18 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { HelpCircle, Users, Eye, EyeOff, Vote, Trophy, X } from "lucide-react";
+import {
+  HelpCircle,
+  Users,
+  Eye,
+  EyeOff,
+  Vote,
+  Trophy,
+  X,
+  Volume2,
+  Swords,
+  Medal,
+} from "lucide-react";
 
 export function RulesSheet() {
   const [isOpen, setIsOpen] = useState(false);
@@ -158,6 +169,103 @@ export function RulesSheet() {
                       </span>
                     </li>
                   </ol>
+                </section>
+
+                {/* Puntuación */}
+                <section>
+                  <h3 className="text-neon-cyan font-bold uppercase text-sm flex items-center gap-2 mb-3">
+                    <Medal className="w-4 h-4 shrink-0" />
+                    PUNTUACIÓN
+                  </h3>
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <div className="flex items-start gap-2">
+                      <span className="text-neon-green font-bold text-base">
+                        +1
+                      </span>
+                      <span>Por cada voto correcto hacia el FEKA.</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-neon-pink font-bold text-base">
+                        +2
+                      </span>
+                      <span>
+                        Para el FEKA si logra engañar a todos y no es
+                        descubierto.
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground/70 mt-1">
+                      Los roles se asignan al azar cada ronda, asegurando
+                      igualdad de oportunidades para todos.
+                    </p>
+                  </div>
+                </section>
+
+                {/* Modos de Juego */}
+                <section>
+                  <h3 className="text-neon-cyan font-bold uppercase text-sm flex items-center gap-2 mb-3">
+                    <Swords className="w-4 h-4 shrink-0" />
+                    MODOS DE JUEGO
+                  </h3>
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <div className="bg-muted/30 rounded-lg p-3">
+                      <span className="font-bold text-foreground uppercase text-xs">
+                        2 FEKAS
+                      </span>
+                      <p className="text-xs mt-1">
+                        Con 6+ jugadores, puedes activar 2 impostores. Los
+                        REALES deben descubrir a ambos para ganar.
+                      </p>
+                    </div>
+                    <div className="bg-muted/30 rounded-lg p-3">
+                      <span className="font-bold text-foreground uppercase text-xs">
+                        Votación verbal
+                      </span>
+                      <p className="text-xs mt-1">
+                        Desactiva la votación en la app y voten directamente
+                        entre ustedes. Al terminar, la app revela al FEKA.
+                      </p>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Torneo */}
+                <section>
+                  <h3 className="text-neon-cyan font-bold uppercase text-sm flex items-center gap-2 mb-3">
+                    <Trophy className="w-4 h-4 shrink-0" />
+                    MODO TORNEO
+                  </h3>
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <p>
+                      Activa el modo Torneo para jugar 3, 5 o 7 rondas con un
+                      podio final.
+                    </p>
+                    <div className="bg-neon-green/10 border border-neon-green/30 rounded-lg p-3">
+                      <p className="text-xs">
+                        <span className="text-neon-green font-bold">
+                          🏆 Podio final:
+                        </span>{" "}
+                        Al terminar todas las rondas, se muestra el ranking con
+                        🥇🥈🥉 y el MVP del torneo.
+                      </p>
+                    </div>
+                    <p className="text-xs text-muted-foreground/70">
+                      Los puntos se acumulan entre rondas. Sin torneo, las
+                      partidas son libres sin límite.
+                    </p>
+                  </div>
+                </section>
+
+                {/* Sonido */}
+                <section>
+                  <h3 className="text-neon-cyan font-bold uppercase text-sm flex items-center gap-2 mb-2">
+                    <Volume2 className="w-4 h-4 shrink-0" />
+                    SONIDO
+                  </h3>
+                  <p className="text-muted-foreground text-xs">
+                    El juego incluye efectos de sonido. Puedes activarlos o
+                    desactivarlos con el botón 🔊 en la pantalla principal. Tu
+                    preferencia se guarda automáticamente.
+                  </p>
                 </section>
               </div>
             </ScrollArea>

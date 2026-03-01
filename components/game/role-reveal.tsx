@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, ArrowRight, ChevronUp, RotateCcw } from "lucide-react";
 import { haptic } from "@/lib/haptics";
+import { sounds } from "@/lib/sounds";
 import { useSwipe } from "@/hooks/use-swipe";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
@@ -43,11 +44,12 @@ export function RoleReveal({
 
   const SWIPE_THRESHOLD = 100;
 
-  // Haptic en múltiples niveles
+  // Haptic + sound en múltiples niveles
   const triggerHaptic = (progress: number) => {
-    const level = Math.floor(progress * 4); // 0, 1, 2, 3, 4 (25%, 50%, 75%, 100%)
+    const level = Math.floor(progress * 4);
     if (level > lastHapticLevel.current) {
       haptic.light();
+      sounds.swipeTick(progress);
       lastHapticLevel.current = level;
     }
   };
@@ -55,6 +57,9 @@ export function RoleReveal({
   const handleReveal = () => {
     setIsRevealing(true);
     haptic.reveal();
+
+    // Mismo sonido para todos — evita delatar al FEKA por audio
+    sounds.reveal();
 
     // Secuencia de transición fluida
     requestAnimationFrame(() => {

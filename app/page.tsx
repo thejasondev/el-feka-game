@@ -7,6 +7,7 @@ import { RoleReveal } from "@/components/game/role-reveal";
 import { TimerPhase } from "@/components/game/timer-phase";
 import { IndividualVoting } from "@/components/game/individual-voting";
 import { ResultsScreen } from "@/components/game/results-screen";
+import { TournamentPodium } from "@/components/game/tournament-podium";
 import { RulesSheet } from "@/components/game/rules-sheet";
 import {
   getRandomWord,
@@ -20,7 +21,8 @@ type GamePhase =
   | "roleReveal"
   | "timer"
   | "voting"
-  | "results";
+  | "results"
+  | "podium";
 
 interface PlayerVote {
   voterIndex: number;
@@ -44,6 +46,10 @@ interface GameState {
   scores: number[];
   streak: number;
   twoImpostors: boolean;
+  skipVoting: boolean;
+  // Tournament
+  totalRounds: number;
+  currentRound: number;
 }
 
 const initialState: GameState = {
@@ -61,6 +67,9 @@ const initialState: GameState = {
   scores: [],
   streak: 0,
   twoImpostors: false,
+  skipVoting: false,
+  totalRounds: 0,
+  currentRound: 1,
 };
 
 export default function ElFekaGame() {
@@ -72,6 +81,8 @@ export default function ElFekaGame() {
       category: CategoryKey,
       timerDuration: number,
       twoImpostors: boolean,
+      skipVoting: boolean,
+      totalRounds: number,
     ) => {
       setGameState((prev) => ({
         ...prev,
@@ -80,6 +91,9 @@ export default function ElFekaGame() {
         category,
         timerDuration,
         twoImpostors,
+        skipVoting,
+        totalRounds,
+        currentRound: 1,
         // Initialize scores if not already set
         scores:
           prev.scores.length === playerCount
@@ -140,6 +154,14 @@ export default function ElFekaGame() {
       phase: "voting",
       currentVoterIndex: 0,
       votes: [],
+    }));
+  }, []);
+
+  // Skip voting: go directly to results without scores
+  const handleRevealFeka = useCallback(() => {
+    setGameState((prev) => ({
+      ...prev,
+      phase: "results",
     }));
   }, []);
 
@@ -216,21 +238,31 @@ export default function ElFekaGame() {
   };
 
   const handlePlayAgain = useCallback(() => {
-    const { word, category: catName } = getRandomWord(gameState.category);
-    const impostorCount = gameState.twoImpostors ? 2 : 1;
-    const impostors = selectImpostors(gameState.players.length, impostorCount);
+    setGameState((prev) => {
+      const nextRound = prev.currentRound + 1;
 
-    setGameState((prev) => ({
-      ...prev,
-      phase: "roleReveal",
-      secretWord: word,
-      categoryName: catName,
-      impostorIndices: impostors,
-      currentPlayerIndex: 0,
-      currentVoterIndex: 0,
-      votes: [],
-    }));
-  }, [gameState.category, gameState.players.length, gameState.twoImpostors]);
+      // If tournament mode and all rounds done, go to podium
+      if (prev.totalRounds > 0 && nextRound > prev.totalRounds) {
+        return { ...prev, phase: "podium" };
+      }
+
+      const { word, category: catName } = getRandomWord(prev.category);
+      const impostorCount = prev.twoImpostors ? 2 : 1;
+      const impostors = selectImpostors(prev.players.length, impostorCount);
+
+      return {
+        ...prev,
+        phase: "roleReveal",
+        secretWord: word,
+        categoryName: catName,
+        impostorIndices: impostors,
+        currentPlayerIndex: 0,
+        currentVoterIndex: 0,
+        votes: [],
+        currentRound: nextRound,
+      };
+    });
+  }, []);
 
   const handleNewGame = useCallback(() => {
     setGameState(initialState);
@@ -289,7 +321,12 @@ export default function ElFekaGame() {
             duration={gameState.timerDuration}
             secretWord={gameState.secretWord}
             categoryName={gameState.categoryName}
-            onVotingStart={handleVotingStart}
+            onVotingStart={
+              gameState.skipVoting ? handleRevealFeka : handleVotingStart
+            }
+            skipVoting={gameState.skipVoting}
+            currentRound={gameState.currentRound}
+            totalRounds={gameState.totalRounds}
             onReset={handleReset}
           />
         );
@@ -317,7 +354,19 @@ export default function ElFekaGame() {
             scores={gameState.scores}
             streak={gameState.streak}
             twoImpostors={gameState.twoImpostors}
+            currentRound={gameState.currentRound}
+            totalRounds={gameState.totalRounds}
             onPlayAgain={handlePlayAgain}
+            onNewGame={handleNewGame}
+          />
+        );
+
+      case "podium":
+        return (
+          <TournamentPodium
+            players={gameState.players}
+            scores={gameState.scores}
+            totalRounds={gameState.totalRounds}
             onNewGame={handleNewGame}
           />
         );
